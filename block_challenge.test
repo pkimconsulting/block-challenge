@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * @file
+ * Tests for block_challenge.module
+ */
+
+/**
+ * Tests the functionality of the Book module.
+ */
+class BlockChallengeTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Block Challenge functionality',
+      'description' => 'Test block shows correct string when no modified content is available',
+      'group' => 'Block Challenge',
+    );
+  }
+
+  function setUp() {
+    // Create an admin user.
+    $admin_user = $this
+      ->drupalCreateUser(array(
+      'administer site configuration',
+      'access administration pages',
+    ));
+    $this
+      ->drupalLogin($admin_user);
+
+    module_enable(array('block_challenge'), TRUE);
+
+    db_merge('block')
+    ->key(array(
+      'module' => 'block_challenge',
+      'delta' => 'block_challenge_modified_today',
+      'theme' => variable_get('theme_default', 'stark'),
+    ))
+    ->fields(array(
+      'status' => 1,
+      'region' => 'sidebar_first',
+      'cache' => DRUPAL_NO_CACHE,
+    ))
+    ->execute();
+  }
+
+  /**
+   * Tests the block displays not found text.
+   */
+  function testBlockChallengeNotFound() {
+    $this->drupalGet('/');
+    $this->assertText(t('No pages modified today'), 'No modified content successfully verified.');
+  }
+
+}

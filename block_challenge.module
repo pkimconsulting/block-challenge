@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * Implements hook_block_info().
+ */
+function block_challenge_block_info() {
+  $blocks = array();
+  $blocks['block_challenge_modified_today'] = array(
+    'info' => t('Block Challenge: All blocks modified today'),
+  );
+  
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function block_challenge_block_view($delta='') {
+  $block = array();
+  
+  switch($delta) {
+    case 'block_challenge_modified_today':
+      $block['content'] = block_challenge_modified_today_view();
+      break;
+  }
+  
+  return $block;
+}
+
+/**
+ * Returns a renderable array with a list of all page content types that were modified today
+ * @return
+ *   returns a renderable array of block content.
+ */
+function block_challenge_modified_today_view() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'page')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->propertyCondition('changed', strtotime('today midnight'), '>=');
+
+  $result = $query->execute();
+  if (!empty($result['node'])) {
+    $modified_today_nids = array_keys($result['node']);
+    $modified_today = entity_load('node', $modified_today_nids);
+
+    $list = array();
+    $list['type'] = 'ul';
+    $list['title'] = 'Modified Today';
+    $list['attributes'] = array('class' => array('list-of-nodes-modified-today'));
+    $list['items'] = array();
+
+    foreach($modified_today as $i => $node) {
+      $list['items'][] = l($node->title, drupal_get_path_alias('node/' . $node->nid));
+    }
+
+    return theme('item_list', $list);
+  }
+  return t('No pages modified today');
+}

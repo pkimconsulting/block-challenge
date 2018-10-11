@@ -1,0 +1,6 @@
+name = Block Challenge
+description = Render a list of pages that were modified on a current day
+package = Block Challenge
+version = 7.x-1.0
+core = 7.x
+files[] = block_challenge.test
